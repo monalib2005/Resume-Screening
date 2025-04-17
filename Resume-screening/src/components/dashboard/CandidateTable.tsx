@@ -28,6 +28,7 @@ interface Candidate {
   uploadDate: string;
   status: "Processing" | "Screened" | "Shortlisted" | "Rejected";
   score: number | null;
+
   
 }
 
@@ -35,9 +36,10 @@ interface CandidateTableProps {
   candidates: Candidate[];
   onCandidateUpdate: (candidate: Candidate) => void;
   selectedid?: string;
+  triger:boolean
 }
 
-export function CandidateTable({ candidates, onCandidateUpdate,selectedid }: CandidateTableProps) {
+export function CandidateTable({ candidates, onCandidateUpdate,selectedid,triger }: CandidateTableProps) {
   const [sortedCandidates, setSortedCandidates] = useState<Candidate[]>([]);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Candidate;
@@ -94,7 +96,7 @@ export function CandidateTable({ candidates, onCandidateUpdate,selectedid }: Can
     };
     
 fetchJobs();
-}, [selectedid]);
+}, [selectedid,triger]);
 
   const requestSort = (key: keyof Candidate) => {
     let direction: "asc" | "desc" = "asc";

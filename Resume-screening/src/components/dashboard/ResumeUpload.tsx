@@ -11,10 +11,12 @@ import axios from "axios";
 interface ResumeUploadProps {
  
   onUploadComplete: (resumes: any[]) => void;
-  selectedid:String;
+  selectedid:string;
+  setriger: React.Dispatch<React.SetStateAction<boolean>>;
+  triger:boolean;
 }
 
-export function ResumeUpload({ selectedid, onUploadComplete }: ResumeUploadProps) {
+export function ResumeUpload({ selectedid, onUploadComplete,setriger,triger }: ResumeUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [candidateName, setCandidateName] = useState("Kalyani");
@@ -56,10 +58,7 @@ export function ResumeUpload({ selectedid, onUploadComplete }: ResumeUploadProps
     const formData = new FormData();
       formData.append("resume", files[0]); // assuming only one resume
       formData.append("jobId", selectedid as string);
-      formData.append("name", candidateName);
-      formData.append("email", candidateEmail);
-      formData.append("score", "0");
-      formData.append("status", "Screened");
+  
 
       if(!selectedid)
         {
@@ -74,6 +73,7 @@ export function ResumeUpload({ selectedid, onUploadComplete }: ResumeUploadProps
           },
         }
       );
+      setriger(!triger);
 
       const result = response.data;
       onUploadComplete([result.candidate]);

@@ -16,6 +16,7 @@ export default function CandidateSection({
   onUpload
 }: any) {
     const [selectedid,setselectid]=useState();
+    const [triger,setriger]=useState(false);
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
@@ -42,7 +43,7 @@ export default function CandidateSection({
 
         { (
           <div className="mt-6">
-            <ResumeUpload selectedid={selectedid} onUploadComplete={onUpload} />
+            <ResumeUpload selectedid={selectedid} onUploadComplete={onUpload} setriger={setriger} triger={triger} />
           </div>
         )}
       </div>
@@ -67,7 +68,7 @@ export default function CandidateSection({
               </div>
             )}
 
-            <CandidateTable selectedid={selectedid} candidates={candidates} onCandidateUpdate={onCandidateUpdate} />
+            <CandidateTable selectedid={selectedid} candidates={candidates} onCandidateUpdate={onCandidateUpdate} triger={triger} />
           </div>
         ) : (
           <div className="bg-card p-8 rounded-lg border flex flex-col items-center justify-center text-center">

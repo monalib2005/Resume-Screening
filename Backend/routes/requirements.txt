@@ -1,0 +1,7 @@
+# pymongo==4.0.0
+# gridfs==2.0.0
+# PyPDF2==1.26.0
+# scikit-learn==1.0.2
+pymongo==4.0.0
+PyPDF2==1.26.0
+scikit-learn==1.0.2
