@@ -88,7 +88,6 @@ export function CandidateTable({ candidates, onCandidateUpdate,selectedid,triger
         const response = await axios.get("http://localhost:5000/api/candidates" ,{
           params: { jobId: selectedid }
         });
-        console.log(response.data); // Do something with the data
         setSortedCandidates(response.data);
       } catch (error) {
         console.error("Failed to fetch jobs:", error);
@@ -97,6 +96,17 @@ export function CandidateTable({ candidates, onCandidateUpdate,selectedid,triger
     
 fetchJobs();
 }, [selectedid,triger]);
+
+  const handleViewResume = async (candidateId: string) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/candidates/${candidateId}/resume`, {responseType: "blob"});
+      const blob = new Blob([response.data], { type: response.headers["content-type"]});
+      const resumeUrl = URL.createObjectURL(blob);
+      window.open(resumeUrl, "_blank");
+    } catch (error) {
+      console.error("Failed to fetch resume:", error);  
+    }
+  }
 
   const requestSort = (key: keyof Candidate) => {
     let direction: "asc" | "desc" = "asc";
@@ -218,11 +228,8 @@ fetchJobs();
                   <TableCell className="font-medium">{candidate.name}</TableCell>
                   <TableCell>{candidate.email}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button  onClick={() => handleViewResume(candidate._id)} variant="ghost" size="sm">
                       <Eye className="h-4 w-4 mr-1" />
-                      {/* {candidate.resume.data.length > 15
-                        ? candidate.fileName.substring(0, 15) + "..."
-                        : candidate.fileName} */}
                     </Button>
                   </TableCell>
                   <TableCell>
