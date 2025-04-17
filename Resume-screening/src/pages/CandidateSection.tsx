@@ -16,6 +16,7 @@ export default function CandidateSection({
   onUpload
 }: any) {
     const [selectedid,setselectid]=useState();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>

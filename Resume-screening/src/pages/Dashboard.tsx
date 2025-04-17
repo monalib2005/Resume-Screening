@@ -109,6 +109,7 @@ export default function Dashboard() {
               onCandidateUpdate={handleCandidateUpdate}
               onSaveChanges={handleSaveChanges}
               onSelect={setSelectedJob}
+              
               onUpload={handleUploadResume}
             />
           </TabsContent>

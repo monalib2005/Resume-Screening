@@ -63,10 +63,14 @@ export function ResumeUpload({ selectedid, onUploadComplete }: ResumeUploadProps
 
       if(!selectedid)
         {
+          toast({
+            title: "Warning!",
+            description: "Select the Job First."
+          })
           return;
         }
       const response = await axios.post(
-        "http://localhost:5000/api/candidates", // change if needed
+        "http://localhost:5000/api/candidates", 
         formData,
         {
           headers: {
