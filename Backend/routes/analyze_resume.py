@@ -8,6 +8,16 @@ import PyPDF2
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+def extract_name(text):
+    doc = nlp(text)
+    for ent in doc.ents:
+        if ent.label_ == "PERSON":
+            return ent.text
+    return "Not found"
 def extract_text(pdf_stream):
     reader = PyPDF2.PdfReader(pdf_stream)
     text = ""
@@ -19,12 +29,12 @@ def extract_email(text):
     match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', text)
     return match.group(0) if match else "Not found"
 
-def extract_name(text):
-    lines = text.strip().split('\n')
-    for line in lines:
-        if len(line.split()) in [2, 3] and line[0].isupper():
-            return line.strip()
-    return "Not found"
+# def extract_name(text):
+#     lines = text.strip().split('\n')
+#     for line in lines:
+#         if len(line.split()) in [2, 3] and line[0].isupper():
+#             return line.strip()
+#     return "Not found"
 
 def calculate_match_score(resume_text, job_description):
     vectorizer = TfidfVectorizer()

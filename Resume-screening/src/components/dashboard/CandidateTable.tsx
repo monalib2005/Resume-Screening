@@ -26,8 +26,9 @@ interface Candidate {
   email: string;
   fileName: string;
   uploadDate: string;
-  status: "Processing" | "Screened" | "Shortlisted" | "Rejected";
+  status: "Screened" | "Shortlisted" | "Rejected";
   score: number | null;
+  saved?: boolean; 
 
   
 }
@@ -41,6 +42,7 @@ interface CandidateTableProps {
 
 export function CandidateTable({ candidates, onCandidateUpdate,selectedid,triger }: CandidateTableProps) {
   const [sortedCandidates, setSortedCandidates] = useState<Candidate[]>([]);
+  const [tri,setri]=useState(false);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Candidate;
     direction: "asc" | "desc";
@@ -88,14 +90,19 @@ export function CandidateTable({ candidates, onCandidateUpdate,selectedid,triger
         const response = await axios.get("http://localhost:5000/api/candidates" ,{
           params: { jobId: selectedid }
         });
-        setSortedCandidates(response.data);
+        const candidatesWithDefaultSaved = response.data.map((c: Candidate) => ({
+          ...c,
+          saved: c.status === "Screened" ? false : true,
+        }));
+  
+        setSortedCandidates(candidatesWithDefaultSaved);
       } catch (error) {
         console.error("Failed to fetch jobs:", error);
       }
     };
     
 fetchJobs();
-}, [selectedid,triger]);
+}, [selectedid,triger,tri]);
 
   const handleViewResume = async (candidateId: string) => {
     try {
@@ -117,8 +124,20 @@ fetchJobs();
   };
   
   const handleStatusUpdate = (candidate: Candidate, status: "Shortlisted" | "Rejected") => {
-    const updatedCandidate = { ...candidate, status };
-    onCandidateUpdate(updatedCandidate);
+    // const updatedCandidate = { ...candidate, status };
+    // console.log(updatedCandidate);
+    // onCandidateUpdate(updatedCandidate);
+    console.log(candidate._id);
+    const updatedCandidates = sortedCandidates.map(candidate1 => {
+      // Step 2: If candidate's id matches, update their status
+      if (candidate1._id === candidate._id) {
+        return { ...candidate1, status };
+      }
+      return candidate1; // Keep other candidates unchanged
+    });
+  
+    // Step 3: Set the updated candidates list to the state
+    setSortedCandidates(updatedCandidates);
     
     toast({
       title: `Candidate ${status}`,
@@ -134,7 +153,34 @@ fetchJobs();
       description: `Notification email sent to ${candidate.name} that they were ${status}.`,
     });
   };
+  const handleSave=async(candidateId: string, status: "Shortlisted" | "Rejected")=>
+  {
+    try {
+      const response = await axios.patch(
+        `http://localhost:5000/api/candidates/${candidateId}`,  // Your PATCH endpoint
+        { status }  // The data to be updated
+      );
+      const updated = sortedCandidates.map(c =>
+        c.id === candidateId ? { ...c, saved: true } : c
+      );
+      setSortedCandidates(updated);
+      // On success, update the candidate status in the parent component
+      setri(!tri);
   
+      toast({
+        title: "Candidate Status Saved",
+        description: `${candidateId} status updated to ${status}.`,
+      });
+    } catch (error) {
+      console.error("Failed to save candidate status:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while saving the candidate status.",
+        variant: "destructive",
+      });
+    }
+
+  }
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Processing":
@@ -216,92 +262,112 @@ fetchJobs();
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedCandidates.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No candidates found
-                </TableCell>
-              </TableRow>
-            ) : (
-              sortedCandidates.map((candidate) => (
-                <TableRow key={candidate.id}>
-                  <TableCell className="font-medium">{candidate.name}</TableCell>
-                  <TableCell>{candidate.email}</TableCell>
-                  <TableCell>
-                    <Button  onClick={() => handleViewResume(candidate._id)} variant="ghost" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                    </Button>
-                  </TableCell>
-                  <TableCell>
-                    {candidate.score !== null ? (
-                      <div className="flex items-center">
-                        <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                          <div
-                            className={`h-2.5 rounded-full ${
-                              candidate.score > 75
-                                ? "bg-green-500"
-                                : candidate.score > 50
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                            }`}
-                            style={{ width: `${candidate.score}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-xs font-medium">{candidate.score}%</span>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Processing...</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant="outline" 
-                      className={`${getStatusColor(candidate.status)} text-white`}
-                    >
-                      {candidate.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {candidate.status !== "Shortlisted" && (
-                          <DropdownMenuItem 
-                            onClick={() => handleStatusUpdate(candidate, "Shortlisted")}
-                          >
-                            Shortlist Candidate
-                          </DropdownMenuItem>
-                        )}
-                        
-                        {candidate.status !== "Rejected" && (
-                          <DropdownMenuItem 
-                            onClick={() => handleStatusUpdate(candidate, "Rejected")}
-                          >
-                            Reject Candidate
-                          </DropdownMenuItem>
-                        )}
-                        
-                        {(candidate.status === "Shortlisted" || 
-                         candidate.status === "Rejected") && (
-                          <DropdownMenuItem 
-                            onClick={() => handleSendEmail(candidate)}
-                          >
-                            <Mail className="h-4 w-4 mr-2" />
-                            Send Notification
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+  {sortedCandidates.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} className="h-24 text-center">
+        No candidates found
+      </TableCell>
+    </TableRow>
+  ) : (
+    sortedCandidates.map((candidate) => (
+      <TableRow key={candidate.id}>
+        <TableCell className="font-medium">{candidate.name}</TableCell>
+        <TableCell>{candidate.email}</TableCell>
+        <TableCell>
+          <Button onClick={() => handleViewResume(candidate._id)} variant="ghost" size="sm">
+            <Eye className="h-4 w-4 mr-1" />
+          </Button>
+        </TableCell>
+        <TableCell>
+          {candidate.score !== null ? (
+            <div className="flex items-center">
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                <div
+                  className={`h-2.5 rounded-full ${
+                    candidate.score > 75
+                      ? "bg-green-500"
+                      : candidate.score > 50
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                  }`}
+                  style={{ width: `${candidate.score}%` }}
+                ></div>
+              </div>
+              <span className="text-xs font-medium">{candidate.score}%</span>
+            </div>
+          ) : (
+            <span className="text-xs text-muted-foreground">Processing...</span>
+          )}
+        </TableCell>
+        <TableCell>
+          <Badge 
+            variant="outline" 
+            className={`${getStatusColor(candidate.status)} text-white`}
+          >
+            {candidate.status}
+          </Badge>
+        </TableCell>
+        <TableCell className="text-right">
+        {!candidate.saved  &&  <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {candidate.status !== "Shortlisted" && (
+                <DropdownMenuItem 
+                  onClick={() => handleStatusUpdate(candidate, "Shortlisted")}
+                >
+                  Shortlist Candidate
+                </DropdownMenuItem>
+              )}
+
+              {candidate.status !== "Rejected" && (
+                <DropdownMenuItem 
+                  onClick={() => handleStatusUpdate(candidate, "Rejected")}
+                >
+                  Reject Candidate
+                </DropdownMenuItem>
+              )}
+
+              {(candidate.status === "Shortlisted" || 
+               candidate.status === "Rejected") && (
+                <DropdownMenuItem 
+                  onClick={() => handleSendEmail(candidate)}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Send Notification
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>}
+          {candidate.saved && (
+    <Button 
+      variant="ghost" 
+      size="sm" 
+      onClick={() => handleSendEmail(candidate)}
+    >
+      <Mail className="h-4 w-4 mr-2" />
+      {/* Send Email */}
+    </Button>
+  )}
+          
+        </TableCell>
+        {/* Add the Save button here */}
+        <TableCell className="text-right">
+         {!candidate.saved && <Button   variant="primary" 
+  size="sm" 
+  className="bg-blue-500 text-white rounded-md hover:bg-blue-600" onClick={() => handleSave(candidate._id, candidate.status)}  >
+            Save
+          </Button>}
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
+
         </Table>
       </div>
     </div>

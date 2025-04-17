@@ -46,14 +46,14 @@ export function ResumeUpload({ selectedid, onUploadComplete,setriger,triger }: R
     console.log(selectedid);
     e.preventDefault();
     console.log(files.length,candidateName,candidateEmail);
-    if (!files.length || !candidateName || !candidateEmail) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields and select a resume file.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (!files.length || !candidateName || !candidateEmail) {
+    //   toast({
+    //     title: "Error",
+    //     description: "Please fill in all fields and select a resume file.",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
     
     const formData = new FormData();
       formData.append("resume", files[0]); // assuming only one resume

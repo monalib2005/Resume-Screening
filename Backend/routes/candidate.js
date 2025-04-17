@@ -94,6 +94,7 @@ router.get('/', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   try {
     const updates = req.body;
+    console.log(updates);
     const candidate = await Candidate.findByIdAndUpdate(req.params.id, updates, { new: true });
 
     if (!candidate) {
