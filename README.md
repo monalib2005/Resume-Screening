@@ -17,8 +17,8 @@ Follow these steps to run the project locally.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/resume-screening.git
-cd resume-screening
+git clone https://github.com/monalib2005/Resume-Screening.git
+cd Resume-Screening
 ```
 
 ---
