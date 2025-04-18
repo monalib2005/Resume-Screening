@@ -123,6 +123,51 @@ router.get('/:id/resume', async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+
+
+  const nodemailer = require('nodemailer');
+ 
+  const SENDER_EMAIL = "fakeecakee813@gmail.com";
+  const APP_PASSWORD = "vmay jtwi nrc jmexc";
+  
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: SENDER_EMAIL,
+      pass: APP_PASSWORD,
+    },
+    tls: {
+      rejectUnauthorized: false, // <- allows self-signed certs
+    },
+  });
+  
+  router.post('/notify', async (req, res) => {
+      
+    const { email, status } = req.body;
+    console.log(email,status);
+  
+    const subject = status === "Shortlisted" ? "🎉 Congratulations!" : "Application Update";
+    const body =
+      status === "Shortlisted"
+        ? "You are selected! Your application is accepted."
+        : "Thank you for applying. Unfortunately, you are not selected.";
+  
+    const mailOptions = {
+      from: SENDER_EMAIL,
+      to: email,
+      subject: subject,
+      text: body,
+    };
+  
+    // try {
+      await transporter.sendMail(mailOptions);
+      res.status(200).json({ message: "Email sent successfully!" });
+    // } catch (error) {
+    //   res.status(500).json({ error: error.message });
+    // }
+  });
+  
   
 
 module.exports = router;

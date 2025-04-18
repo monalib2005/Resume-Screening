@@ -145,14 +145,29 @@ fetchJobs();
     });
   };
   
-  const handleSendEmail = (candidate: Candidate) => {
-    const status = candidate.status === "Shortlisted" ? "selected" : "not selected";
+  const handleSendEmail = async(candidate: Candidate) => {
+    console.log("Hello",candidate);
+   
+      try {
+        const response = await axios.post(`http://localhost:5000/api/candidates/notify`, {
+          email: candidate.email,
+          name: candidate.name,
+          status: candidate.status,
+        });
     
-    toast({
-      title: "Email Sent",
-      description: `Notification email sent to ${candidate.name} that they were ${status}.`,
-    });
-  };
+        toast({
+          title: "Email Sent",
+          description: `Notification email sent to ${candidate.name} (${candidate.email}) about being ${candidate.status.toLowerCase()}.`,
+        });
+      } catch (error) {
+        console.error("Failed to send email:", error);
+        toast({
+          title: "Error",
+          description: "Failed to send email.",
+          variant: "destructive",
+        });
+      }
+    };
   const handleSave=async(candidateId: string, status: "Shortlisted" | "Rejected")=>
   {
     try {

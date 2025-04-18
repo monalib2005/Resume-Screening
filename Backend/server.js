@@ -10,6 +10,9 @@ app.use(express.json());
 
 const PORT = 5000;
 
+
+
+
 // Import the user routes
 const userRoutes = require('./routes/user');
 const jobRoutes = require("./routes/jobcandidate.js");
@@ -24,3 +27,4 @@ app.use('/api/candidates',candidateRoute);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
